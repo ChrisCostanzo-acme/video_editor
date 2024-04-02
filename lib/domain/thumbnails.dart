@@ -1,8 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:get_thumbnail_video/index.dart';
-import 'package:get_thumbnail_video/video_thumbnail.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 import 'package:video_editor_2/domain/bloc/controller.dart';
 import 'package:video_editor_2/domain/entities/cover_data.dart';
 
@@ -24,6 +23,10 @@ Stream<List<Uint8List>> generateTrimThumbnails(
         quality: quality,
       );
 
+      if (bytes == null) {
+        throw Exception('Error when generating trim thumbnails. Thumbnail data is null.');
+      }
+
       byteList.add(bytes);
     } catch (e) {
       debugPrint(e.toString());
@@ -38,9 +41,8 @@ Stream<List<CoverData>> generateCoverThumbnails(
   required int quantity,
   int quality = 10,
 }) async* {
-  final int duration = controller.isTrimmed
-      ? controller.trimmedDuration.inMilliseconds
-      : controller.videoDuration.inMilliseconds;
+  final int duration =
+      controller.isTrimmed ? controller.trimmedDuration.inMilliseconds : controller.videoDuration.inMilliseconds;
   final double eachPart = duration / quantity;
   List<CoverData> byteList = [];
 
@@ -48,10 +50,7 @@ Stream<List<CoverData>> generateCoverThumbnails(
     try {
       final CoverData bytes = await generateSingleCoverThumbnail(
         controller.file.path,
-        timeMs: (controller.isTrimmed
-                ? (eachPart * i) + controller.startTrim.inMilliseconds
-                : (eachPart * i))
-            .toInt(),
+        timeMs: (controller.isTrimmed ? (eachPart * i) + controller.startTrim.inMilliseconds : (eachPart * i)).toInt(),
         quality: quality,
       );
 
